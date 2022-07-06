@@ -1,5 +1,7 @@
 using System;
 using RestSharp;
+using RestSharp.Serializers.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CyberArk.Extensions.Identity
@@ -16,6 +18,8 @@ namespace CyberArk.Extensions.Identity
             {
                 Authenticator = new ClientCredentialsAuthenticator(apiUrl, apiKey, apiKeySecret, apiScope, apiAppId)
             };
+
+            _client.UseSystemTextJson(new JsonSerializerOptions { Converters = { new StringToBoolConverter() } });
         }
 
         public async Task<IdentityUser> GetUser(string userId)

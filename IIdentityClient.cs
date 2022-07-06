@@ -61,7 +61,7 @@ namespace CyberArk.Extensions.Identity
 
     public class IdentityUser
     {
-        [JsonPropertyName("success")] // Returns as "true" or "false" sometimes and true/false others
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
         [JsonPropertyName("Result")]
         public Result Result { get; set; }

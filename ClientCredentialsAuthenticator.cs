@@ -46,9 +46,9 @@ namespace CyberArk.Extensions.Identity
                 var token = string.IsNullOrEmpty(Token) ? await GetToken() : Token;
                 return new HeaderParameter(KnownHeaders.Authorization, token);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw;
+                throw new Exception(string.Format("Recieved Exception: {0}", ex));
             } 
         }
 

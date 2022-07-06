@@ -4,7 +4,7 @@ using CyberArk.Extensions.Utilties.Logger;
 
 namespace CyberArk.Extensions.Identity
 {
-    public class ResponseManager
+    internal class ResponseManager
     {
         public void ValidateLookupResponse(IdentityUser response)
         {

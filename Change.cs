@@ -81,7 +81,7 @@ namespace CyberArk.Extensions.Identity
                 //  Perform Uuid lookup for Current User as Current User
                 var changeClient = new IdentityClient(address, username, currPassword, identityScope, identityAppId);
                 var changeResponse = changeClient.GetUserAttributes(username);
-                ResponseAPI.ValidateLookupResponse(changeResponse);
+                ResponseAPI.ValidateLookupResponse(changeResponse.Result);
                 if (changeResponse.Result.Success)
                 {
                     Logger.WriteLine(string.Format("obtained Uuid ({0}) for {1}", changeResponse.Result.Result.Uuid, username), LogLevel.INFO);

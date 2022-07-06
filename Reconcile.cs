@@ -1,7 +1,4 @@
 ﻿using System.Collections.Generic;
-using CyberArk.Extensions.Identity.Properties;
-using CyberArk.Extensions.Identity.Model;
-using CyberArk.Extensions.Identity.Client;
 using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;

@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
-using CyberArk.Extensions.Identity.Properties;
-using CyberArk.Extensions.Identity.Client;
 using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.Reader;
 using System;
-using CyberArk.Extensions.Identity.Model;
 
 // Change the Template name space
 namespace CyberArk.Extensions.Identity

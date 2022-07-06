@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using CyberArk.Extensions.Identity.Properties;
-using CyberArk.Extensions.Identity.Client;
 using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.Reader;
 using System;
-using CyberArk.Extensions.Identity.Model;
 
 namespace CyberArk.Extensions.Identity
 {
@@ -91,9 +88,9 @@ namespace CyberArk.Extensions.Identity
                 var verifyResponse = verifyClient.GetUserAttributes(username);
                 Logger.WriteLine(string.Format("Task Status: {0}", verifyResponse.Result), LogLevel.INFO);
                 Logger.WriteLine("Validating Verify Response", LogLevel.INFO);
-                ResponseAPI.ValidateLookupResponse(verifyResponse);
+                //ResponseAPI.ValidateLookupResponse(verifyResponse);
 
-                if (verifyResponse.Success)
+                if (verifyResponse.Result.Success)
                 {
                     Logger.WriteLine("Verify action ended successfully", LogLevel.INFO);
                     RC = 0;

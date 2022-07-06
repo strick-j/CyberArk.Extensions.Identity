@@ -3,7 +3,6 @@ using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
-using CyberArk.Extensions.Identity.Utilities;
 using System;
 
 namespace CyberArk.Extensions.Identity

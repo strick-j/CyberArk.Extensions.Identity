@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="RestSharp" Version="108.0.1" />
-    <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="108.0.1" />
     <PackageReference Include="System.Core" Version="3.5.21022.801" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
@@ -18,13 +16,13 @@
 
   <ItemGroup>
     <Reference Include="CyberArk.Extensions.Plugins.Models">
-      <HintPath>..\..\..\..\..\..\Extensions\CyberArk.Extensions.Plugins.Models.dll</HintPath>
+      <HintPath>..\..\..\..\..\Extensions\CyberArk.Extensions.Plugins.Models.dll</HintPath>
     </Reference>
     <Reference Include="CyberArk.Extensions.Utilties">
-      <HintPath>..\..\..\..\..\..\Extensions\CyberArk.Extensions.Utilties.dll</HintPath>
+      <HintPath>..\..\..\..\..\Extensions\CyberArk.Extensions.Utilties.dll</HintPath>
     </Reference>
     <Reference Include="CyberArk.Services.Exceptions">
-      <HintPath>..\..\..\..\..\..\Extensions\CyberArk.Services.Exceptions.dll</HintPath>
+      <HintPath>..\..\..\..\..\Extensions\CyberArk.Services.Exceptions.dll</HintPath>
     </Reference>
   </ItemGroup>
 

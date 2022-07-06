@@ -1,0 +1,7 @@
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.csproj.AssemblyReference.cache
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.Resources.resources
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.csproj.GenerateResource.cache
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.AssemblyInfoInputs.cache
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.AssemblyInfo.cs
+C:\Users\joe\Documents\github\CyberArk.Extensions.Identity\obj\Debug\net48\CyberArk.Extensions.Identity.csproj.CoreCompileInputs.cache

@@ -1,0 +1,19 @@
+﻿<Device Name="Directory">
+	<Policies>
+		<Policy ID="CyberArkIdentity-CloudDirectory" PlatformBaseID="CyberArkIdentity-CloudDirectory" PlatformBaseType="CyberarkIdentityCloudDirectory" PlatformBaseProtocol="REST" AutoChangeOnAdd="No" AutoVerifyOnAdd="No">
+			<Properties>
+				<Required>
+					<Property Name="Address" DisplayName="Address" />
+					<Property Name="Username" DisplayName="Username" />
+					<Property Name="IdentityAppId" DisplayName="Identity Application Id" />
+					<Property Name="IdentityScope" DisplayName="Identity Scope" />
+				</Required>
+				<Optional></Optional>
+			</Properties>
+			<LinkedPasswords>
+				<Link Name="ReconcileAccount" DisplayName="Reconcile Account" PropertyIndex="3" />
+			</LinkedPasswords>
+			<TicketingSystem EnterTicketingInfo="No" ValidateTicketNumber="No" />
+		</Policy>
+	</Policies>
+</Device>

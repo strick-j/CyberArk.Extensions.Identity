@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
-using CyberArk.Extensions.Plugins.Models;
+﻿using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.Reader;
-using System;
+using System.Text.RegularExpressions;
+using System.Net.Http.Headers;
+using System.Security;
+using System.Text;
 
 namespace CyberArk.Extensions.Identity
 {
@@ -50,6 +52,7 @@ namespace CyberArk.Extensions.Identity
             #region Init
             ErrorCodeStandards errCodeStandards = new ErrorCodeStandards();
             int RC = 9999;
+            string action = "Password Change";
             string empty = string.Empty;
             #endregion 
 
@@ -61,40 +64,115 @@ namespace CyberArk.Extensions.Identity
                 ParametersAPI.ValidateParameterLength(username, "Username", 64);
 
                 string address = ParametersAPI.GetMandatoryParameter(ADDRESS, TargetAccount.AccountProp);
-                ParametersAPI.ValidateURI(address, "Address", UriKind.Absolute);
+                ParametersAPI.ValidateURI(address, "Address", UriKind.RelativeOrAbsolute);
 
                 string identityScope = ParametersAPI.GetMandatoryParameter(IDENSCOPE, TargetAccount.AccountProp);
                 ParametersAPI.ValidateAlphanumeric(identityScope, "Identity Scope");
 
                 string identityAppId = ParametersAPI.GetMandatoryParameter(IDENAPPID, TargetAccount.AccountProp);
                 ParametersAPI.ValidateAlphanumeric(identityAppId, "Identity Application Id");
-
                 #endregion
 
                 #region Fetch Account's Passwords
-                string currPassword = TargetAccount.CurrentPassword.convertSecureStringToString();
-                string newPassword = TargetAccount.NewPassword.convertSecureStringToString();
-
+                SecureString secureCurrPass = TargetAccount.CurrentPassword;
+                ParametersAPI.ValidatePasswordIsNotEmpty(secureCurrPass, "Password", 8201);
+                SecureString secureNewPass = TargetAccount.NewPassword;
+                ParametersAPI.ValidatePasswordIsNotEmpty(secureCurrPass, "Password", 8201);
                 #endregion
 
                 #region Logic
-                //  Perform Uuid lookup for Current User as Current User
-                var changeClient = new IdentityClient(address, username, currPassword, identityScope, identityAppId);
-                var changeResponse = changeClient.GetUserAttributes(username);
-                ResponseAPI.ValidateLookupResponse(changeResponse.Result);
-                if (changeResponse.Result.Success)
+                // Logon and obatain Bearer Token
+                // Create URL encoded content for POST
+                var content = new FormUrlEncodedContent(new[]
                 {
-                    Logger.WriteLine(string.Format("obtained Uuid ({0}) for {1}", changeResponse.Result.Result.Uuid, username), LogLevel.INFO);
-                }
+                    new KeyValuePair<string, string>("grant_type", "client_credentials"),
+                    new KeyValuePair<string, string>("scope",$"{identityScope}"),
+                });
 
-                // Execute Change Password Process
-                var executeChangeResponse = changeClient.ChangeUserPassword(currPassword, newPassword);
-                ResponseAPI.ValidateActionResponse(executeChangeResponse);
-                if (executeChangeResponse.Result.Success)
+                // Generate auth token for basic auth header
+                var authToken = Encoding.ASCII.GetBytes($"{username}:{secureCurrPass.convertSecureStringToString()}");
+
+                // Check URI for Scheme, add if not present
+                UriBuilder adddressBuilder = new(address)
                 {
-                    Logger.WriteLine("Verify action ended successfully", LogLevel.INFO);
-                    RC = 0;
+                    Scheme = "https",
+                    Port = -1
+                };
+                Uri validatedAddress = adddressBuilder.Uri;
+
+                // Create HTTP client and set initial headers
+                var client = new HttpClient
+                {
+                    BaseAddress = validatedAddress
+                };
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
+
+                // Obtain Bearer Auth Token from Identity Server API
+                var _client = new IdentityHttpClient(client);
+
+                Logger.WriteLine(string.Format(Resources.SendActionRequest + "Bearer Token to {0}/Oauth2/Token/{1}", address, identityAppId), LogLevel.INFO);
+                var tokenResponse = _client.GetAccessToken(identityAppId, content);
+                if (tokenResponse.Failure)
+                {
+                    if (tokenResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                        IdentityAPI.HandleHttpErrorResult(httpErrorResult);
+                    else if (tokenResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
+                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
+                    else if (tokenResponse is ErrorResult<ApiResponse> errorResult)
+                        IdentityAPI.HandleErrorResult(errorResult);
+                    else
+                        tokenResponse.MissingPatternMatch();
                 }
+                else if (tokenResponse.Success)
+                {
+                    Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseSuccess), LogLevel.INFO);
+                }
+                _client.Dispose();
+
+                // Use Regular Expression to extract Access Token from response
+                Logger.WriteLine(string.Format("Extracting Bearer Token from {0}/Oauth2/Token/{1} response.", address, identityAppId), LogLevel.INFO);
+                var accessToken = Regex.Match(tokenResponse.Data.Details, "(?<=access_token\":\")(.+?)(?=\")").Groups[1].Value;
+                IdentityAPI.ValidateRegexExtraction(accessToken, "access_Token");
+                Logger.WriteLine(Resources.TokenSuccess, LogLevel.INFO);
+
+                // Establish new Client to use Bearer Token Authorization Header
+                var changeClient = new HttpClient
+                {
+                    BaseAddress = validatedAddress
+                };
+                Logger.WriteLine(Resources.UpdateAuthenticationHeader, LogLevel.INFO);
+                changeClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                var _updatedClient = new IdentityHttpClient(changeClient);
+                Logger.WriteLine(string.Format(Resources.SendActionRequest + action), LogLevel.INFO);
+
+                // Create Request Content for changing user password
+                string userChangeData = @"{'oldPassword':'" + Utils.CleanForJSON(secureCurrPass.convertSecureStringToString()) + "','newPassword':'" + Utils.CleanForJSON(secureNewPass.convertSecureStringToString()) + "'}";
+                var userChangeContent = new StringContent(userChangeData, Encoding.UTF8, "application/json");
+
+                var apiResponse = _updatedClient.ChangePassword(userChangeContent);
+                if (apiResponse.Failure)
+                {
+                    if (apiResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                        IdentityAPI.HandleHttpErrorResult(httpErrorResult);
+                    else if (apiResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
+                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
+                    else if (apiResponse is ErrorResult<ApiResponse> errorResult)
+                        IdentityAPI.HandleErrorResult(errorResult);
+                    else
+                        apiResponse.MissingPatternMatch();
+                }
+                else if (apiResponse is SuccessResult<ApiResponse> successResult)
+                {
+                    Logger.WriteLine(string.Format(action + Resources.RecieveActionResponse), LogLevel.INFO);
+                    IdentityAPI.HandleSuccessResult(successResult);
+                    Logger.WriteLine(string.Format(action + Resources.ActionResponseSuccess), LogLevel.INFO);
+                }
+                _updatedClient.Dispose();
+
+                // Change Password action complete set outputs and dispose client
+                Logger.WriteLine(Resources.ChangeSuccess, LogLevel.INFO);
+                platformOutput.Message = Resources.ChangeSuccess;
+                RC = 0;
                 #endregion Logic
 
             }
@@ -104,11 +182,18 @@ namespace CyberArk.Extensions.Identity
                 platformOutput.Message = ex.Message;
                 RC = ex.ErrorCode;
             }
-            catch (UserNotAuthorizedException ex)
+            catch (IdentityServiceException ex)
             {
-                HandleException(ex, Resources.UserNotAuthorizedMessage, ref empty);
+                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
                 platformOutput.Message = ex.Message;
-                RC = PluginErrors.ACCESS_DENIED;
+                RC = ex.ErrorCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.WriteLine(string.Format(Resources.HttpRequestException), LogLevel.ERROR);
+                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.ToString()), LogLevel.ERROR);
+                platformOutput.Message = Resources.HttpRequestException;
+                RC = PluginErrors.HTTP_GENERIC_EXCEPTION;
             }
             catch (Exception ex)
             {

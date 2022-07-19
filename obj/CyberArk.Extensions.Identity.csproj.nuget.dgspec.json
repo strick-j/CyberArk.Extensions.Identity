@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\joe\\Documents\\github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj": {}
+    "C:\\Users\\joe\\source\\repos\\Github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj": {}
   },
   "projects": {
-    "c:\\Users\\joe\\Documents\\github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj": {
+    "C:\\Users\\joe\\source\\repos\\Github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\joe\\Documents\\github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj",
+        "projectUniqueName": "C:\\Users\\joe\\source\\repos\\Github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj",
         "projectName": "CyberArk.Extensions.Identity",
-        "projectPath": "c:\\Users\\joe\\Documents\\github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj",
+        "projectPath": "C:\\Users\\joe\\source\\repos\\Github\\CyberArk.Extensions.Identity\\CyberArk.Extensions.Identity.csproj",
         "packagesPath": "C:\\Users\\joe\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\joe\\Documents\\github\\CyberArk.Extensions.Identity\\obj\\",
+        "outputPath": "C:\\Users\\joe\\source\\repos\\Github\\CyberArk.Extensions.Identity\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\joe\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,32 +40,6 @@
       "frameworks": {
         "net48": {
           "targetAlias": "net48",
-          "dependencies": {
-            "RestSharp": {
-              "target": "Package",
-              "version": "[108.0.1, )"
-            },
-            "RestSharp.Serializers.SystemTextJson": {
-              "target": "Package",
-              "version": "[106.15.0, )"
-            },
-            "System.Core": {
-              "target": "Package",
-              "version": "[3.5.21022.801, )"
-            },
-            "System.Data.DataSetExtensions": {
-              "target": "Package",
-              "version": "[4.5.0, )"
-            },
-            "System.Net.Http": {
-              "target": "Package",
-              "version": "[4.3.4, )"
-            },
-            "System.Xml.Linq": {
-              "target": "Package",
-              "version": "[3.5.21022.801, )"
-            }
-          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
         }
       }

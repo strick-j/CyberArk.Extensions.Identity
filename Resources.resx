@@ -117,40 +117,136 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ChangePassFailed" xml:space="preserve">
-    <value>Change password process failed.</value>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Invalid client creds or client not allowed.</value>
   </data>
-  <data name="ChangePassOK" xml:space="preserve">
-    <value>Change password process finished successfully</value>
+  <data name="ActionResponseFailure" xml:space="preserve">
+    <value>response failure. </value>
   </data>
-  <data name="NoReconcileAccount" xml:space="preserve">
-    <value>Reconcile account was not assigned</value>
+  <data name="ActionResponseSuccess" xml:space="preserve">
+    <value> response validated. JSON indicates action was successful. </value>
   </data>
-  <data name="NoSuchEntityException" xml:space="preserve">
-    <value>The request was rejected because it referenced an entity that does not exist. The error message describes the entity</value>
+  <data name="BadRequestRecieved" xml:space="preserve">
+    <value>400 Bad Request Failure. Checking failure type.</value>
   </data>
-  <data name="PasswordPolicyViolationException" xml:space="preserve">
-    <value>The request was rejected because the provided password did not meet the requirements imposed by the account password policy</value>
+  <data name="ChangeSuccess" xml:space="preserve">
+    <value>Change Action Ended Successfully.</value>
   </data>
-  <data name="ReconcilePassFailed" xml:space="preserve">
-    <value>Reconcile password process failed.</value>
+  <data name="ErrorTimeout" xml:space="preserve">
+    <value>Timeout Error. Unable to resolve address or unable to connect to address.</value>
   </data>
-  <data name="ReconcilePassOK" xml:space="preserve">
-    <value>Reconcile password process finished successfully.</value>
+  <data name="GenericError" xml:space="preserve">
+    <value>Unknown error occured: </value>
   </data>
-  <data name="ServiceFailureException" xml:space="preserve">
-    <value>The request processing has failed because of an unknown error, exception or failure</value>
+  <data name="GenericTokenException" xml:space="preserve">
+    <value>Generic Token Request Exception:  </value>
+  </data>
+  <data name="HttpConnectFailure" xml:space="preserve">
+    <value>WebException: Connection Failure. Unable to connect to the remote server.</value>
+  </data>
+  <data name="HttpGeneralRequestError" xml:space="preserve">
+    <value>Http Request Exeption: Response status code does not indicate success: 400 (Bad Request). No Inner Exception available.</value>
+  </data>
+  <data name="HttpNameResolutionFailure" xml:space="preserve">
+    <value>WebException: Name Resolution Error. The remote name could not be resolved.</value>
+  </data>
+  <data name="HttpRequestException" xml:space="preserve">
+    <value>Non 200 Http Response Recieved. The Identity Web Server is not available or the user credentials were not accepted.</value>
+  </data>
+  <data name="HttpSecureChannelError" xml:space="preserve">
+    <value>Http Request Exeption: The underlying connection was closed: Could not establish trust relationship for the SSL/TLS secure channel</value>
+  </data>
+  <data name="HttpUnhandledInnerException" xml:space="preserve">
+    <value>InnerException: Unhandled.</value>
+  </data>
+  <data name="HttpUnhandledInnerWebException" xml:space="preserve">
+    <value>WebException: Unhandled.</value>
+  </data>
+  <data name="InvalidApp" xml:space="preserve">
+    <value>Unknown Application.</value>
+  </data>
+  <data name="InvalidAuthMode" xml:space="preserve">
+    <value>Client Credentials Authentication Mode is not enabled for this App.</value>
+  </data>
+  <data name="InvalidClientOrCreds" xml:space="preserve">
+    <value>Invalid Client or Credentials.</value>
+  </data>
+  <data name="InvalidGrantType" xml:space="preserve">
+    <value>Invalid Grant Type</value>
+  </data>
+  <data name="InvalidScope" xml:space="preserve">
+    <value>Unknown scope requested.</value>
+  </data>
+  <data name="InvalidUserAccess" xml:space="preserve">
+    <value>User not able to access Identity Application</value>
+  </data>
+  <data name="LogonSuccess" xml:space="preserve">
+    <value>Logon Action Ended Successfully.</value>
+  </data>
+  <data name="PasswordComplexity" xml:space="preserve">
+    <value>Password update failed. Please make sure the password meet the complexity requirements. Password must be at least 8 characters long, not be longer than 64 characters, contain at least one digit, contain at least one upper and one lower case letter.</value>
+  </data>
+  <data name="PasswordJsonRead" xml:space="preserve">
+    <value>After parsing a value an unexpected character was encountered. </value>
+  </data>
+  <data name="PasswordLastN" xml:space="preserve">
+    <value>Password update failed. Please make sure the new password is not one of last few passwords.</value>
+  </data>
+  <data name="PasswordSameAsOld" xml:space="preserve">
+    <value>Password update failed. Please make sure the new password is not the same as the current one.</value>
+  </data>
+  <data name="PrereconcileSuccess" xml:space="preserve">
+    <value>Prereconcile Action Ended Successfully.</value>
+  </data>
+  <data name="RecieveActionResponse" xml:space="preserve">
+    <value> request response recieved. Validating JSON response success value.</value>
+  </data>
+  <data name="ReconcileSuccess" xml:space="preserve">
+    <value>Reconcile Action Ended Successfully.</value>
+  </data>
+  <data name="SendActionRequest" xml:space="preserve">
+    <value>Sending request for </value>
+  </data>
+  <data name="ServiceNotAuthorized" xml:space="preserve">
+    <value>You are not authorized to perform this operation. Please contact your IT helpdesk.</value>
+  </data>
+  <data name="TimeoutTokenException" xml:space="preserve">
+    <value>Timeout Token Request Exception: </value>
+  </data>
+  <data name="TokenError" xml:space="preserve">
+    <value>Unable to extract bearer token from Identity Server response.</value>
+  </data>
+  <data name="TokenSuccess" xml:space="preserve">
+    <value>Extracted bearer token from Identity Server response.</value>
+  </data>
+  <data name="UnhandledApiResponse" xml:space="preserve">
+    <value>Unahandled API Response recieved: </value>
+  </data>
+  <data name="UnhandledApiStatusCode" xml:space="preserve">
+    <value>Unhandled Status Code recieved: </value>
+  </data>
+  <data name="UpdateAuthenticationHeader" xml:space="preserve">
+    <value>Updating HttpClient authentication header to utilize Oauth2 Bearer Token.</value>
+  </data>
+  <data name="UserIdNotFound" xml:space="preserve">
+    <value>User Id not found.</value>
   </data>
   <data name="UserNotAuthorized" xml:space="preserve">
-    <value>is not authorized to perform</value>
+    <value>You are not authorized to perform this operation. Please contact your IT helpdesk.</value>
   </data>
-  <data name="UserNotAuthorizedMessage" xml:space="preserve">
-    <value>User is not authorized to perform this operation</value>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found; they may have been deleted or the directory may be unavailable.</value>
   </data>
-  <data name="VerifyPassFailed" xml:space="preserve">
-    <value>Verify password process failed.</value>
+  <data name="UuidError" xml:space="preserve">
+    <value>Unable to extract UUID from Identity Server response.</value>
   </data>
-  <data name="VerifyPassOK" xml:space="preserve">
-    <value>Verify password process finished successfully</value>
+  <data name="UuidSuccess" xml:space="preserve">
+    <value>Extracted UUID from Identity Server Resposne.</value>
+  </data>
+  <data name="ValidatingResponse" xml:space="preserve">
+    <value>Validating JSON response success value.</value>
+  </data>
+  <data name="VerifySuccess" xml:space="preserve">
+    <value>Verify Action Ended Successfully.</value>
   </data>
 </root>

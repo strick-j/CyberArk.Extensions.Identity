@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using CyberArk.Extensions.Plugins.Models;
+﻿using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
-using System;
 
 namespace CyberArk.Extensions.Identity
 {
@@ -15,10 +13,8 @@ namespace CyberArk.Extensions.Identity
     {
         #region Properties
         private readonly string CLASS_NAME = nameof(BaseAction);
-    
         internal ParametersManager ParametersAPI { get; private set; }
-        internal ResponseManager ResponseAPI { get; private set; }
-
+        internal IdentityServiceManager IdentityAPI { get; private set; }
         #endregion
 
         #region constructor
@@ -31,9 +27,8 @@ namespace CyberArk.Extensions.Identity
         public BaseAction(List<IAccount> accountList, ILogger logger)
             : base(accountList, logger)
         {
-            // Init ParametersManager
             ParametersAPI = new ParametersManager();
-            ResponseAPI = new ResponseManager();
+            IdentityAPI = new IdentityServiceManager();
         }
         #endregion
 
@@ -67,6 +62,5 @@ namespace CyberArk.Extensions.Identity
             platformOutput.Message = errCodeStandards.ErrorStandardsDict[PluginErrors.STANDARD_DEFUALT_ERROR_CODE_IDX].ErrorMsg;
             return errCodeStandards.ErrorStandardsDict[PluginErrors.STANDARD_DEFUALT_ERROR_CODE_IDX].ErrorRC;
         }
-
     }
 }

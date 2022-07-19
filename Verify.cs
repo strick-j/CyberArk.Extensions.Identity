@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using CyberArk.Extensions.Plugins.Models;
+﻿using CyberArk.Extensions.Plugins.Models;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.Reader;
-using System;
+using System.Net.Http.Headers;
+using System.Security;
+using System.Text;
 
 namespace CyberArk.Extensions.Identity
 {
     public class Verify : BaseAction
     {
         #region Consts
+
         public static readonly string USERNAME = "Username";
         public static readonly string ADDRESS = "Address";
         public static readonly string IDENAPPID = "IdentityAppId";
@@ -34,7 +35,7 @@ namespace CyberArk.Extensions.Identity
 
         #region Setter
         /// <summary>
-        /// Defines the Action name that the class is implementing - Verify
+        /// Defines the Action name that the class is implementing - Logon
         /// </summary>
         override public CPMAction ActionName
         {
@@ -46,7 +47,6 @@ namespace CyberArk.Extensions.Identity
         /// Plug-in Starting point function.
         /// </summary>
         /// <param name="platformOutput"></param>
-        /// 
         override public int run(ref PlatformOutput platformOutput)
         {
             Logger.MethodStart();
@@ -54,19 +54,20 @@ namespace CyberArk.Extensions.Identity
             ErrorCodeStandards errCodeStandards = new ErrorCodeStandards();
             int RC = 9999;
             string empty = string.Empty;
-            #endregion 
+            #endregion
+
 
             try
             {
                 SetDefaultValues(errCodeStandards, ref empty);
+                Logger.WriteLine("Attempting to fetch account properties", LogLevel.INFO);
 
                 #region Fetch Account Properties (FileCategories)
-                Logger.WriteLine("Attempting to fetch account properties for Verify", LogLevel.INFO);
                 string username = ParametersAPI.GetMandatoryParameter(USERNAME, TargetAccount.AccountProp);
                 ParametersAPI.ValidateParameterLength(username, "Username", 64);
 
                 string address = ParametersAPI.GetMandatoryParameter(ADDRESS, TargetAccount.AccountProp);
-                ParametersAPI.ValidateURI(address, "Address", UriKind.Absolute);
+                ParametersAPI.ValidateURI(address, "Address", UriKind.RelativeOrAbsolute);
 
                 string identityScope = ParametersAPI.GetMandatoryParameter(IDENSCOPE, TargetAccount.AccountProp);
                 ParametersAPI.ValidateAlphanumeric(identityScope, "Identity Scope");
@@ -76,45 +77,84 @@ namespace CyberArk.Extensions.Identity
                 #endregion
 
                 #region Fetch Account's Passwords
-                Logger.WriteLine("Attempting to fetch account password for Verify", LogLevel.INFO);
-                string verifyPassword = TargetAccount.CurrentPassword.convertSecureStringToString();
-                Logger.WriteLine(string.Format("{0}", verifyPassword), LogLevel.INFO);
+                SecureString secureCurrPass = TargetAccount.CurrentPassword;
+                ParametersAPI.ValidatePasswordIsNotEmpty(secureCurrPass, "Password", 8201);
                 #endregion
 
                 #region Logic
-                Logger.WriteLine("Creating Verify Client", LogLevel.INFO);
-                var verifyClient = new IdentityClient(address, username, verifyPassword, identityScope, identityAppId);
-                Logger.WriteLine("Retrieving Verify Response", LogLevel.INFO);
-                var verifyResponse = verifyClient.GetUserAttributes(username);
-                Logger.WriteLine(string.Format("Task Status: {0}", verifyResponse.Result), LogLevel.INFO);
-                Logger.WriteLine("Validating Verify Response", LogLevel.INFO);
-                //ResponseAPI.ValidateLookupResponse(verifyResponse);
-
-                if (verifyResponse.Result.Success)
+                // Create URL encoded content for POST
+                var content = new FormUrlEncodedContent(new[]
                 {
-                    Logger.WriteLine("Verify action ended successfully", LogLevel.INFO);
-                    RC = 0;
+                    new KeyValuePair<string, string>("grant_type", "client_credentials"),
+                    new KeyValuePair<string, string>("scope",$"{identityScope}"),
+                });
+
+                // Generate auth token for basic auth header
+                var authToken = Encoding.ASCII.GetBytes($"{username}:{secureCurrPass.convertSecureStringToString()}");
+
+                // Check URI for Scheme, add if not present
+                UriBuilder adddressBuilder = new(address)
+                {
+                    Scheme = "https",
+                    Port = -1
+                };
+                Uri validatedAddress = adddressBuilder.Uri;
+
+                var client = new HttpClient
+                {
+                    BaseAddress = validatedAddress
+                };
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
+
+                var _client = new IdentityHttpClient(client);
+
+                Logger.WriteLine(string.Format(Resources.SendActionRequest + "Bearer Token to {0}/Oauth2/Token/{1}", address, identityAppId), LogLevel.INFO);
+                var tokenResponse = _client.GetAccessToken(identityAppId, content);
+                if (tokenResponse.Failure)
+                {
+                    if (tokenResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                        IdentityAPI.HandleHttpErrorResult(httpErrorResult);
+                    else if (tokenResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
+                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
+                    else if (tokenResponse is ErrorResult<ApiResponse> errorResult)
+                        IdentityAPI.HandleErrorResult(errorResult);
+                    else
+                        tokenResponse.MissingPatternMatch();
                 }
+                else if (tokenResponse.Success)
+                {
+                    Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseSuccess), LogLevel.INFO);
+                }
+
+                // Verify Password action complete set outputs and dispose client
+                _client.Dispose();
+                platformOutput.Message = Resources.VerifySuccess;
+                Logger.WriteLine(Resources.VerifySuccess, LogLevel.INFO);
+                RC = 0;
                 #endregion Logic
 
             }
             catch (ParametersConfigurationException ex)
             {
-                Logger.WriteLine("Parameter Configuration Exception", LogLevel.INFO);
-                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.ToString()));
+                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
                 platformOutput.Message = ex.Message;
                 RC = ex.ErrorCode;
             }
-            catch (UserNotAuthorizedException ex)
+            catch (IdentityServiceException ex)
             {
-                Logger.WriteLine("User Not Authorized Exeception", LogLevel.INFO);
-                HandleException(ex, Resources.UserNotAuthorizedMessage, ref empty);
+                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
                 platformOutput.Message = ex.Message;
-                RC = PluginErrors.ACCESS_DENIED;
+                RC = ex.ErrorCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.WriteLine(string.Format(Resources.HttpRequestException), LogLevel.ERROR);
+                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
+                platformOutput.Message = Resources.HttpRequestException;
+                RC = PluginErrors.HTTP_GENERIC_EXCEPTION;
             }
             catch (Exception ex)
             {
-                Logger.WriteLine("Generic Exception", LogLevel.INFO);
                 RC = HandleGeneralError(ex, ref platformOutput);
             }
             finally
@@ -123,7 +163,6 @@ namespace CyberArk.Extensions.Identity
             }
 
             return RC;
-
         }
     }
 }

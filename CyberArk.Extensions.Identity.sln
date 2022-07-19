@@ -1,22 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberArk.Extensions.Identity", "CyberArk.Extensions.Identity.csproj", "{ADA0A9C5-2EA1-4A94-9A82-6570E2A2A3A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberArk.Extensions.Identity", "CyberArk.Extensions.Identity.csproj", "{C7AD9F62-4015-4E4C-9E94-B198DF38C66A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7AD9F62-4015-4E4C-9E94-B198DF38C66A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7AD9F62-4015-4E4C-9E94-B198DF38C66A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7AD9F62-4015-4E4C-9E94-B198DF38C66A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7AD9F62-4015-4E4C-9E94-B198DF38C66A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ADA0A9C5-2EA1-4A94-9A82-6570E2A2A3A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADA0A9C5-2EA1-4A94-9A82-6570E2A2A3A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ADA0A9C5-2EA1-4A94-9A82-6570E2A2A3A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ADA0A9C5-2EA1-4A94-9A82-6570E2A2A3A5}.Release|Any CPU.Build.0 = Release|Any CPU
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {97FDE3B0-5A81-460F-B5B7-3B5B9C656FDE}
 	EndGlobalSection
 EndGlobal

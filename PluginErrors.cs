@@ -19,6 +19,7 @@
         public static readonly int RESPONSE_GENERIC_EXCEPTION = 8511;
         public static readonly int RESPONSE_TIMEOUT_EXCEPTION = 8512;
 
+        // BAD_REQUEST_ERRORS --> Errors returned with 400 Bad Request Response.
         public static readonly int BAD_REQUEST_NULL_RESPONSE = 8820;
         public static readonly int BAD_REQUEST_UNHANDLED = 8821;
         public static readonly int BAD_REQUEST_CLIENT_OR_CREDS = 8822;
@@ -28,6 +29,7 @@
         public static readonly int BAD_REQUEST_GRANT_TYPE = 8826;
         public static readonly int BAD_REQUEST_USER_ACCESS = 8827;
 
+        // STATUS_CODE_ERROS --> Errors related to non success status code.
         public static readonly int STATUS_CODE_UNAUTHORIZED = 8830;
         public static readonly int STATUS_CODE_NOT_FOUND = 8831;
         public static readonly int STATUS_CODE_REQ_TIMEOUT = 8832;
@@ -36,6 +38,7 @@
         public static readonly int STATUS_CODE_FORBIDDEN = 8835;
         public static readonly int STATUS_CODE_UNHANDLED = 8836;
 
+        // HTTP_ERRORS --> Errors received with HTTP Transport, no response recieved.
         public static readonly int HTTP_GENERIC_EXCEPTION = 8840;
         public static readonly int HTTP_NAME_RESOLUTION_FAILURE = 8841;
         public static readonly int HTTP_CONNECT_FAILURE = 8842;
@@ -43,6 +46,7 @@
         public static readonly int HTTP_INNER_UNHANDLED = 8844;
         public static readonly int HTTP_SSL_TLS_EXCEPTION = 8845;
 
+        // SUCCESS_ERROR --> Errors when 200 Success is returned but the action failed.
         public static readonly int SUCCESS_DEFAULT_ERROR = 8850;
         public static readonly int SUCCESS_USER_NOT_FOUND = 8851;
         public static readonly int SUCCESS_USER_ID_NOT_FOUND = 8852;

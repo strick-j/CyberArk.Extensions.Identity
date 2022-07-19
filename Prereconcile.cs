@@ -75,12 +75,10 @@ namespace CyberArk.Extensions.Identity
                 #endregion
 
                 #region Fetch Account's Passwords
-                SecureString secureRecPass = TargetAccount.CurrentPassword;
+                SecureString secureRecPass = ReconcileAccount.CurrentPassword;
                 ParametersAPI.ValidatePasswordIsNotEmpty(secureRecPass, "Reconcile Password", 8201);
-                SecureString secureNewPass = TargetAccount.CurrentPassword;
+                SecureString secureNewPass = TargetAccount.NewPassword;
                 ParametersAPI.ValidatePasswordIsNotEmpty(secureNewPass, "Password", 8201);
-                string reconcilePassword = ReconcileAccount.CurrentPassword.convertSecureStringToString();
-                string newPassword = TargetAccount.NewPassword.convertSecureStringToString();
                 #endregion
 
                 #region Logic
@@ -93,7 +91,7 @@ namespace CyberArk.Extensions.Identity
                 });
 
                 // Generate auth token for basic auth header
-                var authToken = Encoding.ASCII.GetBytes($"{reconcileUsername}:{reconcilePassword}");
+                var authToken = Encoding.ASCII.GetBytes($"{reconcileUsername}:{secureRecPass.convertSecureStringToString()}");
 
                 // Check URI for Scheme, add if not present
                 UriBuilder adddressBuilder = new(address)

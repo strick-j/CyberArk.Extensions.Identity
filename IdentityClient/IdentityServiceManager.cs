@@ -1,5 +1,5 @@
-﻿using System.Net;
-using CyberArk.Extensions.Utilties.Logger;
+﻿using CyberArk.Extensions.Utilties.Logger;
+using System.Net;
 
 namespace CyberArk.Extensions.Identity
 {
@@ -43,7 +43,7 @@ namespace CyberArk.Extensions.Identity
                 else
                     throw new IdentityServiceException(string.Format("Bad Request: {0}", httpErrorResult.Message), PluginErrors.BAD_REQUEST_UNHANDLED);
             };
-            
+
             // Check other common Status Codes
             throw httpErrorResult.StatusCode switch
             {

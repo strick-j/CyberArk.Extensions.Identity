@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CyberArk.Extensions.Identity
+﻿namespace CyberArk.Extensions.Identity
 {
     public class IdentityServiceException : Exception
     {

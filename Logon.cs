@@ -1,7 +1,7 @@
 ﻿using CyberArk.Extensions.Plugins.Models;
-using CyberArk.Extensions.Utilties.Logger;
-using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
+using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
+using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.Reader;
 using System.Net.Http.Headers;
 using System.Security;
@@ -86,7 +86,7 @@ namespace CyberArk.Extensions.Identity
                 // Create Logon URL for Identity Tenant with address and application ID
                 var url = string.Format("{0}/Oauth2/Token/{1}", address, identityAppId);
                 Logger.WriteLine(string.Format("Generated Identity URL: {0}", url), LogLevel.INFO);
-                 
+
                 // Create URL encoded content for POST
                 var content = new FormUrlEncodedContent(new[]
                 {

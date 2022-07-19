@@ -1,9 +1,9 @@
-﻿using System.Net;
-using CyberArk.Extensions.Utilties.Logger;
+﻿using CyberArk.Extensions.Utilties.Logger;
+using System.Net;
 
 namespace CyberArk.Extensions.Identity
 {
- 
+
     public class IdentityHttpClient : IIdentityHttpClient, IDisposable
     {
         private readonly HttpClient _httpClient;
@@ -139,18 +139,18 @@ namespace CyberArk.Extensions.Identity
                         return new HttpErrorResult<ApiResponse>(responseString, response.StatusCode);
                     }
 
-                return new ErrorResult<ApiResponse>("Unknown Error");
-                                }
-                            }
-                            catch (HttpRequestException exception)
-                {
-                    Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseFailure + "HttpRequestException Caught."), LogLevel.ERROR);
-                    return new HttpRequestExceptionResult<ApiResponse>("Caught HttpRequestException", exception);
+                    return new ErrorResult<ApiResponse>("Unknown Error");
                 }
-                finally
-                {
-                    Logger.MethodEnd();
-                }
+            }
+            catch (HttpRequestException exception)
+            {
+                Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseFailure + "HttpRequestException Caught."), LogLevel.ERROR);
+                return new HttpRequestExceptionResult<ApiResponse>("Caught HttpRequestException", exception);
+            }
+            finally
+            {
+                Logger.MethodEnd();
+            }
         }
 
         public void Dispose()

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace CyberArk.Extensions.Identity
+﻿namespace CyberArk.Extensions.Identity
 {
     public abstract class Result
     {
@@ -50,7 +47,7 @@ namespace CyberArk.Extensions.Identity
     {
         public ErrorResult(string message) : this(message, Array.Empty<Error>())
         {
-            
+
         }
 
         public ErrorResult(string message, IReadOnlyCollection<Error> errors)

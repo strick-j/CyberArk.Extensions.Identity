@@ -77,7 +77,7 @@ namespace CyberArk.Extensions.Identity
                 SecureString secureCurrPass = TargetAccount.CurrentPassword;
                 ParametersAPI.ValidatePasswordIsNotEmpty(secureCurrPass, "Password", 8201);
                 SecureString secureNewPass = TargetAccount.NewPassword;
-                ParametersAPI.ValidatePasswordIsNotEmpty(secureCurrPass, "Password", 8201);
+                ParametersAPI.ValidatePasswordIsNotEmpty(secureNewPass, "New Password", 8201);
                 #endregion
 
                 #region Logic

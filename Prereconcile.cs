@@ -78,7 +78,6 @@ namespace CyberArk.Extensions.Identity
                 SecureString secureRecPass = ReconcileAccount.CurrentPassword;
                 ParametersAPI.ValidatePasswordIsNotEmpty(secureRecPass, "Reconcile Password", 8201);
                 SecureString secureNewPass = TargetAccount.NewPassword;
-                ParametersAPI.ValidatePasswordIsNotEmpty(secureNewPass, "Password", 8201);
                 #endregion
 
                 #region Logic

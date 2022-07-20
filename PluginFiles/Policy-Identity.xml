@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Device Name="Directory">
 	<Policies>
-		<Policy ID="CyberArkIdentity-CloudDirectory" PlatformBaseID="CyberArkIdentity-CloudDirectory" PlatformBaseType="CyberarkIdentityCloudDirectory" PlatformBaseProtocol="REST" AutoChangeOnAdd="No" AutoVerifyOnAdd="No">
+		<Policy ID="Identity" PlatformBaseID="Identity" PlatformBaseType="CyberarkIdentityCloudDirectory" PlatformBaseProtocol="REST" AutoChangeOnAdd="No" AutoVerifyOnAdd="No">
 			<Properties>
 				<Required>
 					<Property Name="Address" DisplayName="Address" />

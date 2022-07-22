@@ -322,6 +322,15 @@ namespace CyberArk.Extensions.Identity {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing required parameter..
+        /// </summary>
+        internal static string RequiredParameter {
+            get {
+                return ResourceManager.GetString("RequiredParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sending request for .
         /// </summary>
         internal static string SendActionRequest {

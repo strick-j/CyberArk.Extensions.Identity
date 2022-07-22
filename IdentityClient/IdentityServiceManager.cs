@@ -104,6 +104,8 @@ namespace CyberArk.Extensions.Identity
                     throw new IdentityServiceException(string.Format(Resources.PasswordLastN), PluginErrors.SUCCESS_PASSWORD_LAST_N);
                 else if (successResult.Data.Details.Contains("_I18N_Newtonsoft.Json.JsonReaderException"))
                     throw new IdentityServiceException(string.Format(Resources.PasswordJsonRead), PluginErrors.SUCCESS_JSON_EXCEPTION);
+                else if (successResult.Data.Details.Contains("_I18N_RequiredParameter"))
+                    throw new IdentityServiceException(string.Format(Resources.RequiredParameter), PluginErrors.SUCCESS_REQUIRED_PARAMETER);
                 else
                     throw new IdentityServiceException(string.Format("Unhandled Error: {0}", successResult.Data.Details), PluginErrors.SUCCESS_DEFAULT_ERROR);
             }

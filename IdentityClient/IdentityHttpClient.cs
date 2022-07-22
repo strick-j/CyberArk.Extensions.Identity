@@ -118,6 +118,41 @@ namespace CyberArk.Extensions.Identity
             }
         }
 
+        public Result<ApiResponse> SetAdministrativeAccounts(StringContent content)
+        {
+            Logger.MethodStart();
+            try
+            {
+                using (var response = _httpClient.PostAsync(string.Format("/ServerManage/SetAdministrativeAccounts"), content).GetAwaiter().GetResult())
+                {
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        if (response.Content.ReadAsStringAsync().GetAwaiter().GetResult() == null)
+                            return new ErrorResult<ApiResponse>("null content response returned");
+
+                        var reconcileResponse = new ApiResponse(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                        return new SuccessResult<ApiResponse>(reconcileResponse);
+                    }
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        var responseString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        return new HttpErrorResult<ApiResponse>(responseString, response.StatusCode);
+                    }
+
+                    return new ErrorResult<ApiResponse>("Unknown Error");
+                }
+            }
+            catch (HttpRequestException exception)
+            {
+                Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseFailure + "HttpRequestException Caught."), LogLevel.ERROR);
+                return new HttpRequestExceptionResult<ApiResponse>("Caught HttpRequestException", exception);
+            }
+            finally
+            {
+                Logger.MethodEnd();
+            }
+        }
+
         public Result<ApiResponse> ResetPassword(StringContent content)
         {
             Logger.MethodStart();

@@ -28,6 +28,7 @@
         public static readonly int SUCCESS_PASSWORD_SAME_AS_OLD = 8816;
         public static readonly int SUCCESS_PASSWORD_LAST_N = 8817;
         public static readonly int SUCCESS_JSON_EXCEPTION = 8818;
+        public static readonly int SUCCESS_REQUIRED_PARAMETER = 8819;
 
         // BAD_REQUEST_ERRORS --> Errors returned with 400 Bad Request Response.
         public static readonly int BAD_REQUEST_NULL_RESPONSE = 8820;

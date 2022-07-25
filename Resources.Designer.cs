@@ -394,6 +394,15 @@ namespace CyberArk.Extensions.Identity {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to WebException: Unhandled -  .
+        /// </summary>
+        internal static string UnhandledWebException {
+            get {
+                return ResourceManager.GetString("UnhandledWebException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Updating HttpClient authentication header to utilize Oauth2 Bearer Token..
         /// </summary>
         internal static string UpdateAuthenticationHeader {

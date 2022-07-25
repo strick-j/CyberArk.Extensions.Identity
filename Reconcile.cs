@@ -3,6 +3,8 @@ using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.Reader;
+using CyberArk.Extensions.Plugin.RestAPI;
+using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Security;
 using System.Text;
@@ -83,44 +85,42 @@ namespace CyberArk.Extensions.Identity
                 #endregion
 
                 #region Logic
-                // Logon and obatain Bearer Token
-                // Create URL encoded content for POST
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("grant_type", "client_credentials"),
-                    new KeyValuePair<string, string>("scope",$"{identityScope}"),
-                });
-
-                // Generate auth token for basic auth header
-                var authToken = Encoding.ASCII.GetBytes($"{reconcileUsername}:{secureRecPass.convertSecureStringToString()}");
-
-                // Check URI for Scheme, add if not present
-                UriBuilder adddressBuilder = new(address)
+                // Check Identity Address URI for Scheme, add scheme if not present and convert to string
+                UriBuilder addressBuilder = new(address)
                 {
                     Scheme = "https",
                     Port = -1
                 };
-                Uri validatedAddress = adddressBuilder.Uri;
+                Uri validatedAddress = addressBuilder.Uri;
+                string identityAddress = validatedAddress.ToString();
+                Logger.WriteLine(string.Format("Generated Identity URL: {0}", identityAddress), LogLevel.INFO);
 
-                // Create HTTP client and set initial headers
-                var client = new HttpClient
+                // Generate auth token for basic auth header and create auth header string
+                var authToken = Encoding.ASCII.GetBytes($"{reconcileUsername}:{secureRecPass.convertSecureStringToString()}");
+                string clientCredAuthToken = string.Format("Basic {0}", Convert.ToBase64String(authToken));
+                Logger.WriteLine("Generated Basic Authorization Header", LogLevel.INFO);
+
+                // Create body for logon including grant_type and scope
+                string logonBody = string.Format("&grant_type=client_credentials&scope={0}", identityScope);
+                Logger.WriteLine(string.Format("Generated Authorization Body: {0}", logonBody), LogLevel.INFO);
+
+                // Initialize Client 
+                JsonSerializer _jsonWriter = new()
                 {
-                    BaseAddress = validatedAddress
+                    NullValueHandling = NullValueHandling.Ignore
                 };
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
+                var _client = new IdentityClient(_jsonWriter);
 
-                // Obtain Bearer Auth Token from Identity Server API
-                var _client = new IdentityHttpClient(client);
-
+                // Send request for Bearer Token
                 Logger.WriteLine(string.Format(Resources.SendActionRequest + "Bearer Token to {0}/Oauth2/Token/{1}", address, identityAppId), LogLevel.INFO);
-                var tokenResponse = _client.GetAccessToken(identityAppId, content);
+                var tokenResponse = _client.GetBearerToken(identityAddress, identityAppId, logonBody, clientCredAuthToken);
                 if (tokenResponse.Failure)
                 {
-                    if (tokenResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                    if (tokenResponse is HttpErrorResult<Response> httpErrorResult)
                         IdentityAPI.HandleHttpErrorResult(httpErrorResult);
-                    else if (tokenResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
-                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
-                    else if (tokenResponse is ErrorResult<ApiResponse> errorResult)
+                    else if (tokenResponse is WebExceptionResult<Response> WebExceptionResult)
+                        IdentityAPI.HandleWebExceptionResult(WebExceptionResult.RequestException);
+                    else if (tokenResponse is ErrorResult<Response> errorResult)
                         IdentityAPI.HandleErrorResult(errorResult);
                     else
                         tokenResponse.MissingPatternMatch();
@@ -129,82 +129,81 @@ namespace CyberArk.Extensions.Identity
                 {
                     Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseSuccess), LogLevel.INFO);
                 }
-                _client.Dispose();
 
-                // Use Regular Expression to extract Access Token from response
+                // Extract Access Token From JSON
                 Logger.WriteLine(string.Format("Extracting Bearer Token from {0}/Oauth2/Token/{1} response.", address, identityAppId), LogLevel.INFO);
-                var accessToken = Regex.Match(tokenResponse.Data.Details, "(?<=access_token\":\")(.+?)(?=\")").Groups[1].Value;
-                IdentityAPI.ValidateRegexExtraction(accessToken, "access_Token");
+                var jsonToken = JsonConvert.DeserializeObject<TokenResponse>(tokenResponse.Data.MessageContent);
+                if (jsonToken.AccessToken == null)
+                    throw new IdentityServiceException(string.Format(Resources.TokenError), PluginErrors.JSON_TOKEN_ERROR);
+                string bearerAuthtoken = string.Format("Bearer {0}", jsonToken.AccessToken.ToString());
                 Logger.WriteLine(Resources.TokenSuccess, LogLevel.INFO);
 
-                // Establish new Client to use Bearer Token Authorization Header
-                var resetClient = new HttpClient
+                // Create request body to retrieve user attributes
+                UserObject userObject = new()
                 {
-                    BaseAddress = validatedAddress
+                    ID = username
                 };
-                Logger.WriteLine(Resources.UpdateAuthenticationHeader, LogLevel.INFO);
-                resetClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                var _updatedClient = new IdentityHttpClient(resetClient);
-                Logger.WriteLine(string.Format(Resources.SendActionRequest + action), LogLevel.INFO);
-
-
-                // Create Request Content for obtaining User Attributes
-                string userRequestData = @"{'ID':'" + username + "'}";
-                var userRequestContent = new StringContent(userRequestData, Encoding.UTF8, "application/json");
+                var userAttributeBody = JsonConvert.SerializeObject(userObject);
 
                 // Send Request for User Attributes
-                Logger.WriteLine(string.Format(Resources.SendActionRequest + "User Attributes to {0}/UserMgmt/GetUserAttributes.", address), LogLevel.INFO);
-                var attributeResponse = _updatedClient.GetUserAttributes(userRequestContent);
+                Logger.WriteLine(string.Format(Resources.SendActionRequest + "User Attributes to {0}UserMgmt/GetUserAttributes.", identityAddress), LogLevel.INFO);
+                var attributeResponse = _client.PostJsonBody(string.Format("{0}UserMgmt/GetUserAttributes", identityAddress), userAttributeBody, bearerAuthtoken);
                 if (attributeResponse.Failure)
                 {
-                    if (attributeResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                    if (attributeResponse is HttpErrorResult<Response> httpErrorResult)
                         IdentityAPI.HandleHttpErrorResult(httpErrorResult);
-                    else if (attributeResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
-                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
-                    else if (attributeResponse is ErrorResult<ApiResponse> errorResult)
+                    else if (attributeResponse is WebExceptionResult<Response> WebExceptionResult)
+                        IdentityAPI.HandleWebExceptionResult(WebExceptionResult.RequestException);
+                    else if (attributeResponse is ErrorResult<Response> errorResult)
                         IdentityAPI.HandleErrorResult(errorResult);
                     else
                         attributeResponse.MissingPatternMatch();
                 }
-                else if (attributeResponse is SuccessResult<ApiResponse> successResult)
+                else if (attributeResponse.Success)
                 {
                     Logger.WriteLine(string.Format(action + Resources.RecieveActionResponse), LogLevel.INFO);
-                    IdentityAPI.HandleSuccessResult(successResult);
+                    IdentityAPI.HandleSuccessResult(attributeResponse.Data.MessageContent.ToString());
                     Logger.WriteLine(string.Format(action + Resources.ActionResponseSuccess), LogLevel.INFO);
                 }
 
-                // Use Regular Expression to extract UUID for user from GetUserAttributes response
-                Logger.WriteLine(string.Format("Extracting UUID from {0}/UserMgmt/GetUserAttributes response.", address), LogLevel.INFO);
-                var uuid = Regex.Match(attributeResponse.Data.Details, "(?<=\"Uuid\":\")(.+?)(?=\")").Groups[1].Value;
-                IdentityAPI.ValidateRegexExtraction(uuid, "uuid");
+                // Deserialize JSON and extract UUID for user from GetUserAttributes response
+                Logger.WriteLine(string.Format("Extracting UUID from {0}UserMgmt/GetUserAttributes response.", identityAddress), LogLevel.INFO);
+                var jsonUserAttributes = JsonConvert.DeserializeObject<IdentityResponseRoot>(attributeResponse.Data.MessageContent);
+                if (!jsonUserAttributes.Success || jsonUserAttributes.Result == null)
+                    throw new IdentityServiceException(string.Format(Resources.UuidError), PluginErrors.JSON_UUID_ERROR);
+                string? uuid = jsonUserAttributes.Result.Uuid;
                 Logger.WriteLine(string.Format("User {0} UUID Extracted: {1}", username, uuid), LogLevel.INFO);
                 Logger.WriteLine(Resources.UuidSuccess, LogLevel.INFO);
 
+                // Create reset password request body
+                ResetPasswordObject resetPasswordObject = new()
+                {
+                    ID = uuid,
+                    NewPassword = secureNewPass.convertSecureStringToString()
+                };
+                var resetPasswordBody = JsonConvert.SerializeObject(resetPasswordObject);
+
                 // Attempt credential change using extracted UUID
                 Logger.WriteLine(string.Format(Resources.SendActionRequest + action), LogLevel.INFO);
-                // Create Request Content for changing user password
-                string userReconcileData = @"{'ID':'" + uuid + "','newPassword':'" + Utils.CleanForJSON(secureNewPass.convertSecureStringToString()) + "'}";
-                var userReconcileContent = new StringContent(userReconcileData, Encoding.UTF8, "application/json");
-                var reconcileResponse = _updatedClient.ResetPassword(userReconcileContent);
+                var reconcileResponse = _client.PostJsonBody(string.Format("{0}UserMgmt/ResetUserPassword", identityAddress), resetPasswordBody, bearerAuthtoken);
                 if (reconcileResponse.Failure)
                 {
-                    if (reconcileResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                    if (reconcileResponse is HttpErrorResult<Response> httpErrorResult)
                         IdentityAPI.HandleHttpErrorResult(httpErrorResult);
-                    else if (reconcileResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
-                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
-                    else if (reconcileResponse is ErrorResult<ApiResponse> errorResult)
+                    else if (reconcileResponse is WebExceptionResult<Response> WebExceptionResult)
+                        IdentityAPI.HandleWebExceptionResult(WebExceptionResult.RequestException);
+                    else if (reconcileResponse is ErrorResult<Response> errorResult)
                         IdentityAPI.HandleErrorResult(errorResult);
                     else
                         reconcileResponse.MissingPatternMatch();
                 }
-                else if (reconcileResponse is SuccessResult<ApiResponse> successResult)
+                else if (reconcileResponse.Success)
                 {
                     Logger.WriteLine(string.Format(action + Resources.RecieveActionResponse), LogLevel.INFO);
-                    IdentityAPI.HandleSuccessResult(successResult);
+                    IdentityAPI.HandleSuccessResult(reconcileResponse.Data.MessageContent.ToString());
                     Logger.WriteLine(string.Format(action + Resources.ActionResponseSuccess), LogLevel.INFO);
                 }
 
-                _updatedClient.Dispose();
                 Logger.WriteLine(Resources.ReconcileSuccess, LogLevel.INFO);
                 RC = 0;
                 #endregion Logic
@@ -221,13 +220,6 @@ namespace CyberArk.Extensions.Identity
                 Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
                 platformOutput.Message = ex.Message;
                 RC = ex.ErrorCode;
-            }
-            catch (HttpRequestException ex)
-            {
-                Logger.WriteLine(string.Format(Resources.HttpRequestException), LogLevel.ERROR);
-                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.ToString()), LogLevel.ERROR);
-                platformOutput.Message = Resources.HttpRequestException;
-                RC = PluginErrors.HTTP_GENERIC_EXCEPTION;
             }
             finally
             {

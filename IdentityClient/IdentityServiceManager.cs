@@ -1,27 +1,12 @@
 ﻿using CyberArk.Extensions.Utilties.Logger;
+using CyberArk.Extensions.Plugin.RestAPI;
 using System.Net;
 
 namespace CyberArk.Extensions.Identity
 {
     public class IdentityServiceManager
     {
-        public void ValidateRegexExtraction(string regexData, string regexValue)
-        {
-            Logger.MethodStart();
-            if (string.IsNullOrEmpty(regexData))
-            {
-                switch (regexValue)
-                {
-                    case "access_token":
-                        throw new IdentityServiceException(string.Format(Resources.TokenError), PluginErrors.REGEX_TOKEN_ERROR);
-                    case "uuid":
-                        throw new IdentityServiceException(string.Format(Resources.UuidError), PluginErrors.REGEX_UUID_ERROR);
-                }
-            }
-            Logger.MethodEnd();
-        }
-
-        public void HandleHttpErrorResult(HttpErrorResult<ApiResponse> httpErrorResult)
+         public void HandleHttpErrorResult(HttpErrorResult<Response> httpErrorResult)
         {
             // Check 400 Bad Request Status Code
             if (httpErrorResult.StatusCode == HttpStatusCode.BadRequest)
@@ -57,57 +42,48 @@ namespace CyberArk.Extensions.Identity
             };
         }
 
-        public void HandleHttpRequestExceptionResult(HttpRequestException ex)
+        public void HandleWebExceptionResult(WebException ex)
         {
-            if (ex.GetBaseException() is WebException webException)
+            throw ex.Status switch
             {
-                throw webException.Status switch
-                {
-                    WebExceptionStatus.NameResolutionFailure => new IdentityServiceException(string.Format(Resources.HttpNameResolutionFailure), PluginErrors.HTTP_NAME_RESOLUTION_FAILURE),
-                    WebExceptionStatus.ConnectFailure => new IdentityServiceException(string.Format(Resources.HttpConnectFailure), PluginErrors.HTTP_CONNECT_FAILURE),
-                    WebExceptionStatus.SecureChannelFailure => new IdentityServiceException(string.Format(Resources.HttpSecureChannelError), PluginErrors.HTTP_SSL_TLS_EXCEPTION),
-                    _ => new IdentityServiceException(string.Format(Resources.HttpUnhandledInnerWebException + "{0}", webException.Message), PluginErrors.HTTP_INNER_WEB_UNHANDLED),
-                };
-            }
-            else
-            {
-                throw new IdentityServiceException(string.Format(Resources.HttpUnhandledInnerException + "{0}", ex.InnerException.Message), PluginErrors.HTTP_INNER_UNHANDLED);
-            }
-
-            throw new IdentityServiceException(string.Format(Resources.HttpGeneralRequestError + "{0}", ex.InnerException.Message), PluginErrors.HTTP_GENERIC_EXCEPTION);
+                WebExceptionStatus.NameResolutionFailure => new IdentityServiceException(string.Format(Resources.HttpNameResolutionFailure), PluginErrors.WEB_NAME_RESOLUTION_FAILURE),
+                WebExceptionStatus.ConnectFailure => new IdentityServiceException(string.Format(Resources.HttpConnectFailure), PluginErrors.WEB_CONNECT_FAILURE),
+                WebExceptionStatus.SecureChannelFailure => new IdentityServiceException(string.Format(Resources.HttpSecureChannelError), PluginErrors.WEB_SSL_TLS_EXCEPTION),
+                _ => new IdentityServiceException(string.Format(Resources.UnhandledWebException + "{0}", ex.Message), PluginErrors.WEB_UNHANDLED),
+            };
         }
 
-        public void HandleErrorResult(ErrorResult<ApiResponse> errorResult)
+        public void HandleErrorResult(ErrorResult<Response> errorResult)
         {
-            throw new IdentityServiceException(string.Format(Resources.GenericError + "{0}", errorResult.Data.Details), PluginErrors.DEFAULT_ERROR_NUMBER);
+            throw new IdentityServiceException(string.Format(Resources.GenericError + "{0}", errorResult.Data.MessageContent), PluginErrors.DEFAULT_ERROR_NUMBER);
         }
 
-        public void HandleSuccessResult(SuccessResult<ApiResponse> successResult)
+        public void HandleSuccessResult(string responseContent)
         {
             Logger.MethodStart();
-            if (successResult.Data.Details.Contains("\"success\":false"))
+            if (responseContent.Contains("\"success\":false"))
             {
                 Logger.WriteLine("Identity server returned status code 200 but action was not successful. Checking error...", LogLevel.ERROR);
-                if (successResult.Data.Details.Contains("_I18N_UserNotFound"))
+                if (responseContent.Contains("_I18N_UserNotFound"))
                     throw new IdentityServiceException(string.Format(Resources.UserNotFound), PluginErrors.SUCCESS_USER_NOT_FOUND);
-                else if (successResult.Data.Details.Contains("_I18N_UserIDNotFound"))
+                else if (responseContent.Contains("_I18N_UserIDNotFound"))
                     throw new IdentityServiceException(string.Format(Resources.UserIdNotFound), PluginErrors.SUCCESS_USER_ID_NOT_FOUND);
-                else if (successResult.Data.Details.Contains("_I18N_System.UnauthorizedAccessException"))
+                else if (responseContent.Contains("_I18N_System.UnauthorizedAccessException"))
                     throw new IdentityServiceException(string.Format(Resources.UserNotAuthorized), PluginErrors.SUCCESS_USER_NOT_AUTHORIZED);
-                else if (successResult.Data.Details.Contains("_I18N_ServiceUnauthorizedAccess"))
+                else if (responseContent.Contains("_I18N_ServiceUnauthorizedAccess"))
                     throw new IdentityServiceException(string.Format(Resources.ServiceNotAuthorized), PluginErrors.SUCCESS_SERVICE_NOT_AUTHORIZED);
-                else if (successResult.Data.Details.Contains("_I18N_SetPasswordFailedNotComplex"))
+                else if (responseContent.Contains("_I18N_SetPasswordFailedNotComplex"))
                     throw new IdentityServiceException(string.Format(Resources.PasswordComplexity), PluginErrors.SUCCESS_INVALID_PASSWORD_COMPLEXITY);
-                else if (successResult.Data.Details.Contains("_I18N_SetPasswordFailedNewSameAsOld"))
+                else if (responseContent.Contains("_I18N_SetPasswordFailedNewSameAsOld"))
                     throw new IdentityServiceException(string.Format(Resources.PasswordSameAsOld), PluginErrors.SUCCESS_PASSWORD_SAME_AS_OLD);
-                else if (successResult.Data.Details.Contains("_I18N_SetPasswordFailedSameAsLastN"))
+                else if (responseContent.Contains("_I18N_SetPasswordFailedSameAsLastN"))
                     throw new IdentityServiceException(string.Format(Resources.PasswordLastN), PluginErrors.SUCCESS_PASSWORD_LAST_N);
-                else if (successResult.Data.Details.Contains("_I18N_Newtonsoft.Json.JsonReaderException"))
+                else if (responseContent.Contains("_I18N_Newtonsoft.Json.JsonReaderException"))
                     throw new IdentityServiceException(string.Format(Resources.PasswordJsonRead), PluginErrors.SUCCESS_JSON_EXCEPTION);
-                else if (successResult.Data.Details.Contains("_I18N_RequiredParameter"))
+                else if (responseContent.Contains("_I18N_RequiredParameter"))
                     throw new IdentityServiceException(string.Format(Resources.RequiredParameter), PluginErrors.SUCCESS_REQUIRED_PARAMETER);
                 else
-                    throw new IdentityServiceException(string.Format("Unhandled Error: {0}", successResult.Data.Details), PluginErrors.SUCCESS_DEFAULT_ERROR);
+                    throw new IdentityServiceException(string.Format("Unhandled Error: {0}", responseContent), PluginErrors.SUCCESS_DEFAULT_ERROR);
             }
             Logger.MethodEnd();
         }

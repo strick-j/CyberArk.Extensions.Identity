@@ -2,6 +2,7 @@
 using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.Logger;
+using Newtonsoft.Json;
 
 namespace CyberArk.Extensions.Identity
 {
@@ -29,6 +30,8 @@ namespace CyberArk.Extensions.Identity
         {
             ParametersAPI = new ParametersManager();
             IdentityAPI = new IdentityServiceManager();
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings { MaxDepth = 128 };
         }
         #endregion
 

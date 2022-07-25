@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="CyberArk.Extensions.Plugins.Models">
       <HintPath>..\..\..\..\..\..\Extensions\CyberArk.Extensions.Plugins.Models.dll</HintPath>
     </Reference>

@@ -12,8 +12,8 @@
 
         public static readonly int NO_SUCH_ENTITY_ERROR_NUMBER = 8800;
         public static readonly int MANDATORY_PARAMETER_MISSING = 8801;
-        public static readonly int REGEX_TOKEN_ERROR = 8802;
-        public static readonly int REGEX_UUID_ERROR = 8803;
+        public static readonly int JSON_TOKEN_ERROR = 8802;
+        public static readonly int JSON_UUID_ERROR = 8803;
         public static readonly int RESPONSE_CONTENT_NULL = 8804;
         public static readonly int RESPONSE_GENERIC_EXCEPTION = 8505;
         public static readonly int RESPONSE_TIMEOUT_EXCEPTION = 8506;
@@ -49,15 +49,12 @@
         public static readonly int STATUS_CODE_FORBIDDEN = 8835;
         public static readonly int STATUS_CODE_UNHANDLED = 8836;
 
-        // HTTP_ERRORS --> Errors received with HTTP Transport, no response recieved.
-        public static readonly int HTTP_GENERIC_EXCEPTION = 8840;
-        public static readonly int HTTP_NAME_RESOLUTION_FAILURE = 8841;
-        public static readonly int HTTP_CONNECT_FAILURE = 8842;
-        public static readonly int HTTP_INNER_WEB_UNHANDLED = 8843;
-        public static readonly int HTTP_INNER_UNHANDLED = 8844;
-        public static readonly int HTTP_SSL_TLS_EXCEPTION = 8845;
-
-        
+        // WEB_ERRORS --> Errors received with HTTP Transport, no response recieved.
+        public static readonly int WEB_GENERIC_EXCEPTION = 8840;
+        public static readonly int WEB_NAME_RESOLUTION_FAILURE = 8841;
+        public static readonly int WEB_CONNECT_FAILURE = 8842;
+        public static readonly int WEB_UNHANDLED = 8843;
+        public static readonly int WEB_SSL_TLS_EXCEPTION = 8844;
 
         public static readonly int DEFAULT_ERROR_NUMBER = -1;
     }

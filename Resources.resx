@@ -228,6 +228,9 @@
   <data name="UnhandledApiStatusCode" xml:space="preserve">
     <value>Unhandled Status Code recieved: </value>
   </data>
+  <data name="UnhandledWebException" xml:space="preserve">
+    <value>WebException: Unhandled -  </value>
+  </data>
   <data name="UpdateAuthenticationHeader" xml:space="preserve">
     <value>Updating HttpClient authentication header to utilize Oauth2 Bearer Token.</value>
   </data>

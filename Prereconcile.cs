@@ -3,7 +3,8 @@ using CyberArk.Extensions.Utilties.CPMParametersValidation;
 using CyberArk.Extensions.Utilties.CPMPluginErrorCodeStandarts;
 using CyberArk.Extensions.Utilties.Logger;
 using CyberArk.Extensions.Utilties.Reader;
-using System.Net.Http.Headers;
+using CyberArk.Extensions.Plugin.RestAPI;
+using Newtonsoft.Json;
 using System.Security;
 using System.Text;
 
@@ -81,44 +82,42 @@ namespace CyberArk.Extensions.Identity
                 #endregion
 
                 #region Logic
-                // Logon and obatain Bearer Token
-                // Create URL encoded content for POST
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("grant_type", "client_credentials"),
-                    new KeyValuePair<string, string>("scope",$"{identityScope}"),
-                });
-
-                // Generate auth token for basic auth header
-                var authToken = Encoding.ASCII.GetBytes($"{reconcileUsername}:{secureRecPass.convertSecureStringToString()}");
-
-                // Check URI for Scheme, add if not present
-                UriBuilder adddressBuilder = new(address)
+                // Check Identity Address URI for Scheme, add scheme if not present and convert to string
+                UriBuilder addressBuilder = new(address)
                 {
                     Scheme = "https",
                     Port = -1
                 };
-                Uri validatedAddress = adddressBuilder.Uri;
+                Uri validatedAddress = addressBuilder.Uri;
+                string identityAddress = validatedAddress.ToString();
+                Logger.WriteLine(string.Format("Generated Identity URL: {0}", identityAddress), LogLevel.INFO);
 
-                // Create HTTP client and set initial headers
-                var client = new HttpClient
+                // Generate auth token for basic auth header and create auth header string
+                var authToken = Encoding.ASCII.GetBytes($"{reconcileUsername}:{secureRecPass.convertSecureStringToString()}");
+                string clientCredAuthToken = string.Format("Basic {0}", Convert.ToBase64String(authToken));
+                Logger.WriteLine("Generated Basic Authorization Header", LogLevel.INFO);
+
+                // Create body for logon including grant_type and scope
+                string logonBody = string.Format("&grant_type=client_credentials&scope={0}", identityScope);
+                Logger.WriteLine(string.Format("Generated Authorization Body: {0}", logonBody), LogLevel.INFO);
+
+                // Initialize Client 
+                JsonSerializer _jsonWriter = new()
                 {
-                    BaseAddress = validatedAddress
+                    NullValueHandling = NullValueHandling.Ignore
                 };
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
+                var _client = new IdentityClient(_jsonWriter);
 
-                // Obtain Bearer Auth Token from Identity Server API
-                var _client = new IdentityHttpClient(client);
-
+                // Send request for Bearer Token
                 Logger.WriteLine(string.Format(Resources.SendActionRequest + "Bearer Token to {0}/Oauth2/Token/{1}", address, identityAppId), LogLevel.INFO);
-                var tokenResponse = _client.GetAccessToken(identityAppId, content);
+                var tokenResponse = _client.GetBearerToken(identityAddress, identityAppId, logonBody, clientCredAuthToken);
                 if (tokenResponse.Failure)
                 {
-                    if (tokenResponse is HttpErrorResult<ApiResponse> httpErrorResult)
+                    if (tokenResponse is HttpErrorResult<Response> httpErrorResult)
                         IdentityAPI.HandleHttpErrorResult(httpErrorResult);
-                    else if (tokenResponse is HttpRequestExceptionResult<ApiResponse> httpRequestExcpetionResult)
-                        IdentityAPI.HandleHttpRequestExceptionResult(httpRequestExcpetionResult.RequestException);
-                    else if (tokenResponse is ErrorResult<ApiResponse> errorResult)
+                    else if (tokenResponse is WebExceptionResult<Response> WebExceptionResult)
+                        IdentityAPI.HandleWebExceptionResult(WebExceptionResult.RequestException);
+                    else if (tokenResponse is ErrorResult<Response> errorResult)
                         IdentityAPI.HandleErrorResult(errorResult);
                     else
                         tokenResponse.MissingPatternMatch();
@@ -127,7 +126,6 @@ namespace CyberArk.Extensions.Identity
                 {
                     Logger.WriteLine(string.Format("Bearer Token " + Resources.ActionResponseSuccess), LogLevel.INFO);
                 }
-                _client.Dispose();
 
                 Logger.WriteLine(Resources.PrereconcileSuccess, LogLevel.INFO);
                 RC = 0;
@@ -145,13 +143,6 @@ namespace CyberArk.Extensions.Identity
                 Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
                 platformOutput.Message = ex.Message;
                 RC = ex.ErrorCode;
-            }
-            catch (HttpRequestException ex)
-            {
-                Logger.WriteLine(string.Format(Resources.HttpRequestException), LogLevel.ERROR);
-                Logger.WriteLine(string.Format("Recieved exception: {0}", ex.Message), LogLevel.ERROR);
-                platformOutput.Message = Resources.HttpRequestException;
-                RC = PluginErrors.HTTP_GENERIC_EXCEPTION;
             }
             catch (Exception ex)
             {

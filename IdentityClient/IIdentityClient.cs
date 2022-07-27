@@ -24,6 +24,18 @@ namespace CyberArk.Extensions.Identity
         public string? Error_Description { get; set; }
     }
 
+    public class SetAdminAccounts
+    {
+        [JsonProperty("Password")]
+        public string? Password { get; set; }
+        [JsonProperty("UserUuid")]
+        public string? UserUuid { get; set; }
+        [JsonProperty("User")]
+        public string? User { get; set; }
+        [JsonProperty("Domains")]
+        public string[]? Domains { get; set; }
+    }
+
     public class ChangePasswordObject
     {
         [JsonProperty("oldPassword")]
